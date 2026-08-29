@@ -9,13 +9,115 @@ Prefer short summaries, mistakes, decisions, and next steps.
 
 ## Current Project
 
-Project name: Guess it 1
-Project type: Streaming statistical prediction CLI in Go
-Current goal: Predict a range containing the next input after each received value.
+Project name: Guess it 2
+Project type: Streaming linear-regression next-value prediction CLI in Go
+Current goal: Predict a narrow range containing the next input, using the input-line index as x and received values as y.
 
 ---
 
 ## Session Summaries
+
+### 2026-08-29 — Regression and residual comprehension review
+
+Learner answered a five-question oral review at 7.5/10. They correctly described the slope `a`, the intercept `b`, residual as actual minus regression-predicted value, and the mature fixed-width decision. They then correctly corrected the index trace: after receiving n values, existing indices are 0 through n-1, while the next unknown value is at index n. Residual spread is useful because it measures noise around the trend; ordinary standard deviation around the average mixes that noise with the overall upward trend.
+
+Next step: repeat a small index trace, such as three received values at indices 0, 1, and 2, then state which x predicts the fourth value.
+
+### 2026-08-29 — Session close: controlled tuning results and restore point
+
+Learner reviewed regression line, residuals, next-index prediction, and the fixed-width mature policy. They correctly concluded that three received values occupy indices 0, 1, and 2, so predict the fourth at index 3.
+
+Deterministic tuning results: mature plus-or-minus-3 and plus-or-minus-5 widths lose to linear-regr; low-noise n=51 through n=100 multiplier 0.25 lowers Data 4 average by 68 and Data 5 by 1 with no mse/nic win-count gain; low-noise fixed plus-or-minus-6 from n=76 scores Data 4 102,472 (baseline 102,540) and Data 5 100,327 (baseline 100,322), with all reference win counts unchanged. `nic` is a last-value point predictor; its duplicate pairs do not form useful triple runs (only 12 triple-or-longer continuations across all ten Data 4/5 samples). `mse` takes aggressive narrow width-2 trend bets, so it can outscore wider correct intervals without being more accurate.
+
+Restore point: source currently has the rejected low-noise n=76 fixed-range activation branch. Restore the original n>100 fixed plus-or-minus-6 activation, retain multiplier 0.30 for n=51 through n=100, rebuild root and tester binaries, then rerun deterministic checks if resuming. No further simple width, timing, constant-centre, or last-residual tuning is justified by the observed evidence.
+
+Controlled width experiment: Learner changed only the mature fixed range from plus or minus 6 to plus or minus 3. It loses to linear-regr, confirming that width 6 is too narrow for the mature Data 4/5 residual noise. An intermediate plus-or-minus-5 candidate also loses, though narrowly. This candidate family must not replace the verified plus-or-minus-6 width-12 policy.
+
+Early-policy experiment: Learner changed only the low-noise n=51 through n=100 multiplier from 0.30 to 0.25. Deterministic scores were Data 4: 102,398; 99,183; 105,055; 103,170; 102,556 (average 102,472), and Data 5: 101,135; 100,049; 100,549; 98,450; 101,423 (average 100,321). Linear-regr wins remain Data 4 4/5 and Data 5 5/5, but mse and nic win counts do not improve. The original 0.30 is better by average (Data 4 +68; Data 5 +1), so reject 0.25 and restore 0.30.
+
+Early fixed-range activation experiment: Learner retained the low-noise multiplier 0.30 through n=75, then started the existing rounded fixed plus-or-minus-6 range at n=76 only when residual SD is below 35. Deterministic scores were Data 4: 102,477; 99,232; 105,000; 103,171; 102,483 (average 102,472), and Data 5: 101,164; 100,049; 100,550; 98,450; 101,423 (average 100,327). This preserves all prior win counts: linear-regr 4/5 Data 4 and 5/5 Data 5; mse 3/5 and 4/5; nic 3/5 and 3/5. It loses 68 average points on Data 4 while gaining only 5 on Data 5, so reject it and restore the original n>100 activation boundary.
+
+### 2026-08-28 — Deterministic official Data 4 and Data 5 baseline
+
+Validation: `go test ./...` passed with Go 1.26.5, `gofmt -d` produced no diff, and `git diff --check` passed. The current implementation is regression-centred with population residual standard deviation. Its `PredictRange` currently uses a 0.5 residual-margin multiplier.
+
+Benchmark: Scored all five fixed samples with the tester's exact rule. Data 4 student scores were 101,979; 100,799; 101,852; 101,293; 101,486 (average 101,482), compared with `linear-regr` average 102,176. Data 5 student scores were 99,668; 97,977; 99,919; 98,376; 98,927 (average 98,973), compared with `linear-regr` average 99,547. Student won one Data 4 sample and one Data 5 sample, but loses the aggregate on both.
+
+Diagnosis: The regression centre is viable; tune only the residual-margin multiplier in controlled deterministic trials. Do not mix in an outlier or centre change, and update the stale README only after selecting the final policy.
+
+Follow-up: Learner confirmed that reducing the fixed multiplier through 0.1 loses. A single global residual multiplier is therefore insufficient; next diagnosis should compare how interval width ought to change with available history rather than keep shrinking every prediction equally.
+
+Design hypothesis: Use a history-sensitive residual multiplier after at least three points (0.5 for n 3–19, 0.4 for 20–49, 0.3 for 50–99, and 0.2 for 100+). Two points always produce zero residual spread because one line joins them exactly, so learner selected a separate initial n=2 margin of plus or minus 20. This is a candidate, not yet benchmarked.
+
+Manual trace: Inputs 10, 12, 14 produced -40 60, -6 34, 16 16. This confirms the n=1 fallback, the new n=2 plus-or-minus-20 branch, and the n=3 zero-residual prediction for a perfect trend. Next validate a noisy three-point trace, then run format/tests and the fixed-sample benchmark.
+
+Validation and benchmark: Noisy inputs 10, 12, 15 produced -40 60, -6 34, 17 18. `go test ./...` passed, `gofmt -d` and `git diff --check` had no findings. The history-sensitive candidate averaged 102,155 on Data 4 (baseline 101,482; linear-regr 102,176), but 98,494 on Data 5 (baseline 98,973; linear-regr 99,547). Its Data 4 coverage fell to about 14 percent, near the reference's 13 percent; Data 5 coverage fell to about 19 percent and aggregate score worsened. Keep the Data 4 insight, but do not adopt this universal late-margin policy: Data 5 needs a data-sensitive width decision.
+
+Residual audit: At n=12,500, all Data 4 samples had residual SD 28.83–28.95; Data 5 samples had 42.21–44.89. The same separation was broadly visible at n=1,000: Data 4 about 29 and Data 5 about 40–54. A threshold near 35 is a justified first hypothesis: below it use the n-sensitive narrowing; at or above it retain a wider multiplier, then score all fixed samples before accepting it.
+
+Final candidate benchmark: The residual-SD threshold policy passed `go test ./...`, had no gofmt or diff-check findings, and averaged 102,155 on Data 4 and 99,033 on Data 5. Compared with the original fixed-0.5 baseline (101,482 and 98,973), it improves both official datasets; compared with linear-regr it is only 21 points behind on Data 4 and 514 behind on Data 5. It therefore retains the low-noise n-sensitive switch only below residual SD 35, uses 0.5 at or above 35, and preserves the n=2 plus-or-minus-20 margin. This is the selected final policy pending README refresh and rebuilding the tester executable.
+
+Robustness target: All comparisons are against `linear-regr`. The candidate wins 2 of 5 deterministic samples for Data 4 and 2 of 5 for Data 5. Learner chose not to optimize merely to 3 of 5; target 4 of 5 wins per dataset where evidence supports it, because the browser tester randomly selects one of five samples.
+
+High-noise 0.4 experiment: With only the residual-SD-at-least-35 multiplier changed from 0.5 to 0.4, `go test ./...` passed and formatting/diff checks were clean. Deterministic comparison against linear-regr gave Data 4 wins 2/5 (samples 4 and 5) and Data 5 wins 3/5 (samples 1, 3, and 4). This is a verified improvement in Data 5 win count over the 0.5 candidate, but does not yet meet the 4/5 target. Data 4 stays in the low-noise branch, so next isolate its n-over-100 multiplier, currently 0.2; begin with an intermediate value such as 0.25.
+
+Data 4 diagnosis: Changing the low-noise n-over-100 multiplier to 0.25 did not improve wins (still 2/5) and lowered its average to 101,347, so retain 0.2. With 0.2, student and linear-regr have virtually identical centre MAE (about 26), while reference ranges are typically width 12 and student ranges are already close. Reference bounds are commonly one unit higher, but virtual shifts from minus 2 through plus 2 showed zero shift is best: plus 1 falls to 1/5 wins. Do not tune a constant centre offset; any next improvement needs a different width/shape hypothesis, not more of the same constant adjustments.
+
+Residual-pattern audit: Global regression residual lag-1 correlation is essentially zero in every fixed sample (Data 4 from -0.0026 to 0.0091; Data 5 from -0.0084 to 0.0077). Recent residuals therefore cannot predict the sign or size of the next residual. This rules out a last-residual centre correction as a justified way to gain repeatable wins; remaining score differences against linear-regr are dominated by irreducible noise and discrete interval/rounding choices.
+
+Discrete-width audit: For all five Data 4 samples, linear-regr emits width exactly 12 on every one of 12,500 output lines. The student with low-noise multiplier 0.2 emits width 12 on roughly 4,000–6,000 lines but width 13 on roughly 6,000–8,000 lines, plus early wider ranges. Cause: outward Floor/Ceil turns an intended fractional half-width near 6 into an integer width of 13 whenever the centre has a fractional part. This is a concrete new hypothesis distinct from a constant multiplier: in mature low-noise data, produce a fixed width-12 integer interval around a deliberately rounded regression centre, then compare centre-rounding choices on the same fixed samples.
+
+Width-12 verification: The mature fixed-width-12 branch yields verified Data 4 wins 4/5 (only sample 2 loses) and Data 5 wins 3/5 (samples 1, 3, and 4). Independently, linear-regr emits width exactly 12 on all 12,500 output lines of every Data 4 and every Data 5 sample. Therefore extend the mature width-12 policy to all residual-SD levels; retain residual SD only for the pre-100-input range policy, then benchmark again.
+
+Final audit: With the width-12 branch applied to every history after n=100, `go test ./...` passed, gofmt and diff checks were clean. Against linear-regr on the fixed official files, Data 4 scored 102,503; 99,408; 104,969; 103,273; 102,551: 4/5 wins and average 102,540 versus 102,176. Data 5 scored 101,140; 100,049; 100,549; 98,450; 101,423: 5/5 wins and average 100,322 versus 99,547. README refreshed and tester executable rebuild are final handoff tasks.
+
+Project close: README now documents the regression centre, residual-based early policy, and mature width-12 integer policy. Rebuilt `guess-it-2` and `guess-it-dockerized/student/guess-it-2` from the verified source; they have identical SHA-256 hashes and executable permissions. Final `go test ./...`, gofmt diff, and git diff check are clean.
+
+### 2026-08-25 — Data 4 baseline, toolchain repair, and margin experiment
+
+Validation: Installed official non-Snap Go 1.26.5 in `~/.local`; project `go test ./...` passed and `gofmt -d` produced no diff. The supplied Docker tester was repaired by restoring execute permission for all student and AI executables, then rebuilding the container.
+
+Benchmark: On one paired random Data 4 run, Student scored 98,019 with 59.67% correct guesses. `linear-regr` scored 104,532 with only 13.49% correct guesses. Transcript evidence showed the reference uses much narrower ranges, so a low coverage rate can still win when successful intervals are very narrow.
+
+Experiment: Tried scaling the residual-standard-deviation margin by 0.5, 0.25, and 0.1. Learner reports these candidates lose generally, so do not adopt a smaller fixed margin based on this exploratory evidence. The tester selects one of five random files per click; compare variants only in paired runs with the same displayed reference score, or score all five fixed Data 4 files deterministically.
+
+Next step: Resume by collecting paired, exact score evidence for the unscaled baseline and one candidate on matching Data 4 samples. Diagnose interval centre versus width only after that evidence; keep the regression/residual implementation unchanged meanwhile.
+
+### 2026-08-25 — Manual regression traces passed
+
+Evidence: With inputs 10, 12, 14, the program printed `-40 60`, `14 14`, and `16 16`. The first output is the one-value fallback; the later point intervals are correct because all observed points sit exactly on one straight line and residual spread is zero. With inputs 10, 12, 15, it printed `-40 60`, `14 14`, and `17 18`, showing that non-zero residual spread widens the third range.
+
+Next step: Choose a small minimum early margin or test progressively noisier sequences, then measure the official Data 4 and 5 tester baseline before adding any outlier policy.
+
+### 2026-08-25 — Regression-centred range and residual spread completed
+
+Summary: Learner corrected the streaming order conceptually: append the received value, update history length, use the ±50 fallback only while fewer than two points exist, then fit the regression line and predict at x = history length for the next input. They connected this prediction as the centre of PredictRange.
+
+Learning: Learner implemented population residual standard deviation. For every historical point, they calculate actual y minus the line's predicted y, square that residual, add it to a total, then take the square root of the mean total. They explained why squaring prevents positive and negative residuals from cancelling and why Sqrt restores the original input units.
+
+Verification: The saved helper source has the intended population-standard-deviation calculation. `go test ./...` could not run because the local Snap confinement lacks `cap_dac_override`; this is an environment limitation, not a source-test result.
+
+Next step: Correct the first-input boundary in main so a one-value history selects the fallback, then run a small manual trend example and verify that each input prints exactly one two-integer range.
+
+### 2026-08-24 — Guess-it-2 onboarding and baseline audit
+
+Summary: Read the Guess-it-2 brief, socage state, inherited Guess-it-1 Go code, tester instructions, and fixed audit data. The prior predictor centres each interval on average plus or minus standard deviation; it is valid as a baseline but does not use x/index information.
+
+Evidence: In Data 4 sample 1, y rises from 183 at x=0 to 12,663 at x=12,499, with mean adjacent change about +0.9985 and differences from -98 to +101. Data 5 has a comparable +0.9965 trend but larger local changes, from -653 to +661.
+
+Decision: First derive the regression-line centre for x = number of received inputs (the next index). Only then decide a range width from the prediction error/noise; do not tune the old Guess-it-1 multiplier first.
+
+Progress: Learner renamed `converters/` to `calculators/` and transferred `sums` plus `LinearRegressionLine` from Linear Stats. The imported helpers currently accept `[]int`, while the existing streaming history uses `[]float64` after ParseFloat.
+
+Update: Learner adapted both helpers to accept `[]float64`. In `sums`, x remains derived from `float64(i)` and y is the input `num`; the regression calculations retain float64 sums and coefficients.
+
+Review: Learner started calling LinearRegressionLine in main after computing history length. This must be conditional: the first accepted input makes n=1, for which the helper correctly returns its insufficient-data error, but the streaming protocol still requires a valid range line.
+
+Session-close update: Learner implemented the first-input branch in main, retaining the ±50 fallback and preventing regression from being called with only one data point. The at-least-two-values branch now uses the transferred regression helper; history length is updated after each branch so the next prediction index can be n. They also created `ResidualStdDeviation(data, a, b)`: its residual formula is correct (`actual y - predicted y`), and the pending correction is to accumulate squared residuals across the complete history, then calculate their population standard deviation.
+
+What the learner understood: Linear regression supplies the range centre at the next index; the range width must measure deviation from the regression line, not deviation from the overall average. A single point cannot determine a slope, so it requires fallback handling.
+
+Next step: Finish and review `ResidualStdDeviation`; only then connect its result as the range margin around the next-index regression prediction.
 
 ### 2026-08-12 — Statistics refresher and project start
 

@@ -1,11 +1,11 @@
 {
-  "project_name": "guess-it-1",
-  "project_type": "streaming statistical prediction CLI",
-  "current_topic": "completed: streaming statistical next-value prediction",
-    "current_problem": "none; project closed",
-    "current_goal": "completed Guess-it-1 audit-focused predictor",
+  "project_name": "guess-it-2",
+  "project_type": "streaming linear-regression next-value prediction CLI",
+  "current_topic": "linear-regression prediction centre and residual spread",
+    "current_problem": "source currently contains a rejected early fixed-range activation experiment; baseline restoration is pending",
+    "current_goal": "restore the validated Guess-it-2 predictor baseline and rebuild its tester binary",
   "failed_attempts": 0,
-    "last_help_mode": "Socratic code-flow review and benchmark interpretation",
+    "last_help_mode": "Socratic comprehension review, controlled interval-policy tuning, and deterministic benchmark audit",
   "code_allowed": false,
   "project_topic_levels": {
     "project_setup": 5,
@@ -15,6 +15,6 @@
   },
   "known_project_tools": [],
   "weak_project_tools": [],
-    "recent_session_summary": "Project complete. The final predictor calculates average and population standard deviation from accepted history, rejects abrupt differences of at least 1,000 from the last accepted value, uses multiplier 1.58, and prints one outward-rounded integer range per input. `calculateRange` returns bounds so main can safely include an accepted current value in the final interval without changing history. Across five fixed samples, the current binary beat the local nic reference on average for audit Data 1, Data 2, and Data 3. The learner understood prediction timing, the role of numAccepted, and why nic's narrow point predictions win only on chance repeats.",
-    "next_step": "No active project work. Optional future exploration: detect proven periodic patterns (such as Data 8) in a separate raw-history mode without weakening the completed Data 1–3 baseline."
+    "recent_session_summary": "Learner completed a 5-question review and correctly traced that three values occupy indices 0, 1, and 2, while the fourth is predicted at index 3, equal to len(data). Controlled mature-range candidates plus or minus 3 and plus or minus 5 both lose to linear-regr. An early n=51 through n=100 multiplier 0.25 candidate and a low-noise fixed plus-or-minus-6 activation from n=76 also gave no win-count improvement; the latter scored Data 4 102,472 (baseline 102,540) and Data 5 100,327 (baseline 100,322). Source and matching root/tester binaries currently still contain the rejected n=76 activation experiment; restore the baseline before treating the project as closed.",
+    "next_step": "Restore the original n>100 mature-policy boundary, the n=51 through n=100 low-noise multiplier to 0.30, and the mature range to plus or minus 6. Do not continue with simple width or activation-threshold reductions; any future experiment needs a distinct evidence-based condition."
 }

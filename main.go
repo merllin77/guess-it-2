@@ -3,24 +3,22 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"guess-it-2/converters"
+	"guess-it-2/calculators"
 	"math"
 	"os"
 	"strconv"
 	"strings"
 )
 
-func calculateRange(userInput []float64, numbersLen int) (int, int) {
-	average := converters.Average(userInput)
-	stdDeviation := converters.StdDeviation(userInput, average)
-	lower, upper := converters.PredictRange(average, stdDeviation, numbersLen)
+func calculateRange(regressionPrediction float64, residualStdDev float64, numbersLen int) (int, int) {
+	lower, upper := calculators.PredictRange(regressionPrediction, residualStdDev, numbersLen)
 	return int(math.Floor(lower)), int(math.Ceil(upper)) // rounding to lower decimal (math.Floor) and to upper decimal (math.Ceil)
 }
 
 func main() {
 	var (
-		userInput  []float64
-		numbersLen int
+		userInput                []float64
+		lower, upper, numbersLen int
 	)
 	scanner := bufio.NewScanner(os.Stdin) // "scanner" reads the user's input from CLI (using os.Stdin)
 
@@ -29,46 +27,41 @@ func main() {
 		line := strings.TrimSpace(scanner.Text())
 
 		if line == "" { // Bad input
-			fmt.Println("Wrong Input")
+			fmt.Println("Empty value is not accepted, please, give a number")
 			return
 		}
 
 		num, err := strconv.ParseFloat(line, 64) // convert string to float64
 		if err != nil {
-			fmt.Println("Error in number conversion")
+			fmt.Println("Error in number from string conversion")
 			return
-		}
-		numAccepted := true // initialize every new num as accepted
-		if numbersLen >= 1 {
-			deviation := num - userInput[numbersLen-1]
-			if (int(deviation) >= 1000 && int(deviation) >= -1000) || (int(deviation) <= 1000 && int(deviation) <= -1000) {
-				// userInput = userInput // Do nothing (reject random range variation of 1000 from current accepted value)
-				numAccepted = false // if num is out of filtering range mark it as false
-			}
-
-			if numAccepted {
-				userInput = append(userInput, num) // append only the accepted (numAccepted) user input to history
-			}
-
 		}
 
 		// Add the first input to accepted history
-		if numbersLen == 0 {
-			userInput = append(userInput, num)
-		}
+		// 1st input range
+		userInput = append(userInput, num) // add user's input to history
+		numbersLen = len(userInput)        // update length of userInput's history
 
-		numbersLen = len(userInput) // length of userInput's history
-		lower, upper := calculateRange(userInput, numbersLen)
+		if numbersLen <= 1 {
+			lower = int(num - 50) // 1st input's range
+			upper = int(num + 50)
 
-		// If the number is accepted, ensure the final range includes the current number.
-		if numAccepted {
-			if int(num) <= lower {
-				lower = int(num)
-			} else if int(num) >= upper {
-				upper = int(num)
+			// Calculate the range after the 1st value of userInput
+		} else {
+			a, b, err := calculators.LinearRegressionLine(userInput)
+			if err != nil {
+				fmt.Println(err)
+				return
 			}
-		}
 
+			regressionPrediction := (a * (float64(numbersLen))) + b                  // prediction of regression line for the next input (last numbersLen)
+			residualStdDev, err := calculators.ResidualStdDeviation(userInput, a, b) // the diferrence between the actual y value and the predicted's value from regression line
+			if err != nil {
+				fmt.Println(err)
+			}
+
+			lower, upper = calculateRange(regressionPrediction, residualStdDev, numbersLen)
+		}
 		fmt.Println(lower, upper)
 	}
 

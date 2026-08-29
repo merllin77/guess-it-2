@@ -1,7 +1,7 @@
 {
   "user_id": "ktallaris",
   "global_level": 5,
-  "last_updated": "2026-08-18",
+  "last_updated": "2026-08-29",
   "topic_levels": {
     "go_basics": 5,
     "go_pointers": 4,
@@ -21,7 +21,7 @@
     "git": 5,
     "docker": 4,
     "algorithms": 5,
-    "statistics": 4.7,
+    "statistics": 5.0,
     "data_structures": 4.3,
     "html": 4,
     "css": 3,
@@ -65,6 +65,15 @@
     "recursive_include_skip_backtracking",
     "per_path_ant_allocation_for_turn_scoring",
     "normalized_per_turn_tunnel_tracking",
+    "linear_regression_next_index_prediction",
+    "regression_residual_concept",
+    "population_residual_standard_deviation",
+    "matched_random_benchmark_comparison",
+    "deterministic_multi_sample_benchmarking",
+    "history_sensitive_interval_policy",
+    "residual_noise_threshold_policy",
+    "isolated_parameter_tuning",
+    "integer_interval_width_audit",
     "struct_based_path_selection",
     "per_path_launch_quotas",
     "lexicographic_tie_breaking_design"
@@ -145,7 +154,7 @@
     "User is learning coding at Zone01.",
     "User prefers guided reasoning, hints, and direct explanations when stuck.",
     "User wants the agent to adapt help based on level and failed attempts.",
-    "Current project: Lem-in in Go, using Socratic mentoring from soc-agent-sharp.md.",
+    "Current project: Guess-it-2 in Go completed, using Socratic mentoring and project-local socage state.",
     "For Lem-in, user explicitly prefers writing the implementation themselves with questions/hints instead of direct code examples.",
     "Global hard constraint: never provide code, snippets, exact conditions, or syntax fragments in any project unless the user explicitly asks for code. Provide verbal conceptual guidance and review only.",
     "When continuing any previous project session, first consult socage/soc-agent-sharp.md, socage/learner_state.json, socage/convDB.md, and socage/user_global_level.json before answering; then use strict no-code Socratic guidance unless the user explicitly asks for code or edits.",
@@ -181,5 +190,16 @@
     ,"On 2026-08-15, learner used controlled tuning for Guess it 1: they identified Final Result as the primary objective, recognised the tester's random sample selection, and used matching reference scores to compare multipliers on the same sample. On fixed Data 1 evidence, multiplier 1.2 outperformed 1.1 with window 15 and threshold 1,000."
     ,"On 2026-08-18, learner completed deterministic audit tuning for Guess it 1. They understood why random tester clicks can repeat one of five samples, why the outlier filter must be symmetric around zero, and why full accepted history is better than a recent window for the stable official Data 1 through 3 distribution. A full-history policy with threshold plus-or-minus 1,000 and standard-deviation multiplier 1.58 beat Median on all five fixed samples of Data 1, 2, and 3, and Average on all five fixed Data 1 samples. They also learned scanner.Err placement after the scan loop and standard error versus standard output."
     ,"On 2026-08-19, learner completed Guess-it-1. They refactored prediction-bound calculation to return values for final-range adjustment, kept accepted-history decisions separate from output logic, and preserved one prediction line per input. They analysed the nic reference as a last-value point predictor: its occasional high score comes from random consecutive repeats, which cannot be predicted reliably in a streaming setting. On fixed-sample averages, the completed predictor beat nic across Data 1 through 3."
+    ,"On 2026-08-24, learner started Guess-it-2. They transferred linear-regression sums and coefficient calculation into a calculators package, adapted the numerical history from []int to []float64, and separated the one-value fallback from the at-least-two-values regression branch. They understand that prediction uses x=n and that residual equals actual y minus regression-predicted y."
+    ,"On 2026-08-25, learner completed population residual standard deviation: square each residual so signs cannot cancel, average the squared residuals, then use Sqrt to restore original data units. They connected regression prediction as the interval centre and residual standard deviation as its margin."
+    ,"On 2026-08-25, learner validated a regression predictor in Guess-it-2 with manual traces and the Docker tester. They learned that a random tester click chooses one of five samples, so variants can only be compared in paired Student/reference runs or against fixed samples. Data 4 showed that very narrow intervals can outscore broad high-coverage intervals; shrinking the residual margin alone did not generally win."
+    ,"On 2026-08-28, learner replaced random-click evidence with deterministic scoring across all five fixed official samples of Data 4 and Data 5. They verified that the current regression plus 0.5 residual-margin policy is competitive but slightly below linear-regr on each aggregate, so subsequent tuning must change only the margin and compare the same ten samples."
+    ,"On 2026-08-28, learner implemented a history-sensitive residual-margin policy with an explicit n=2 range because two points have zero residual spread. The deterministic result nearly matched linear-regr on Data 4 but worsened Data 5, teaching that width must respond to observed noise as well as history length."
+    ,"On 2026-08-28, learner measured the residual-SD gap between Data 4 and Data 5, selected a threshold of 35, and verified a noise-sensitive policy on all ten fixed samples. It improves both dataset averages over the fixed-margin baseline while preserving regression as the prediction centre."
+    ,"On 2026-08-28, learner applied controlled tuning by changing only the high-noise multiplier to 0.4. Deterministic comparison improved Data 5 to 3 of 5 wins against linear-regr while Data 4 remained 2 of 5, so the next experiment isolates Data 4's low-noise late-history coefficient."
+    ,"On 2026-08-28, learner discovered that outward integer rounding widened many intended low-noise intervals from 12 to 13. They used an exact width audit of linear-regr, then implemented rounded-centre fixed width 12 after 100 inputs. Final deterministic audit reached 4 of 5 Data 4 wins and 5 of 5 Data 5 wins against linear-regr."
+    ,"On 2026-08-28, learner completed Guess-it-2. They documented the verified regression predictor, rebuilt matching root and Docker-tester binaries, and confirmed Go compilation, formatting, and diff checks."
+    ,"On 2026-08-29, learner reviewed Guess-it-2 concepts. They can explain slope/intercept, residuals, and the mature fixed-width policy. Reinforce that an input slice with length n has known indices 0 through n-1, so next-value prediction evaluates the regression line at x=n."
+    ,"On 2026-08-29, learner ran controlled Guess-it-2 tuning experiments. They understood one-change-at-a-time testing and rejected mature width reductions, an early multiplier reduction, and earlier fixed-range activation when fixed-sample averages or win counts did not improve. They distinguished nic's chance duplicate hits and mse's aggressive narrow-range trade-off from a robust streaming policy."
   ]
 }
