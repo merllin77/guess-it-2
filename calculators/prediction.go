@@ -30,7 +30,7 @@ func PredictRange(regressionPrediction float64, residualStdDev float64, n int) (
 		case n > 20 && n <= 50:
 			multiplier = 0.4
 
-		case n > 50 && n <= 75:
+		case n > 50 && n <= 100:
 			multiplier = 0.3
 
 			// default: 			// We check above n > 100 and returning the values

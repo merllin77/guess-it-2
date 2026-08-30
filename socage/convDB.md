@@ -17,6 +17,22 @@ Current goal: Predict a narrow range containing the next input, using the input-
 
 ## Session Summaries
 
+### 2026-08-30 — Restore of the n=51-to-100 low-noise branch
+
+Learner simplified the low-noise switch to `n > 50 && n <= 100`, with multiplier `0.3`. This fixes the prior n=76-to-100 gap where the multiplier remained zero. They initially added an extra closing brace before `else`; compiler feedback identified it, and they corrected the block nesting. Source validation now passes: no gofmt diff, `go test ./...` passes with `GOCACHE=/tmp/guess-it-2-go-cache` and `/home/merllin/.local/bin/go`, and `git diff --check` is clean. The checked binaries are still old and must be rebuilt before any score claims from the edited source.
+
+Deterministic source-binary audit: Data 4 student scores are 102,503; 99,408; 104,969; 103,273; 102,551 versus `linear-regr` 102,300; 100,750; 104,532; 101,680; 101,618, retaining 4/5 wins. Data 5 student scores are 101,140; 100,049; 100,549; 98,450; 101,423 versus reference 100,006; 99,696; 99,448; 97,216; 101,370, for 5/5 wins. Therefore the restored source passes the intended Data 4/5 benchmark except the known Data 4 sample-2 loss.
+
+Recent-centre experiment: A virtual policy retained the original pre-200 output and fixed width 12, but after n>200 used a regression centre calculated from the latest 200 values. In Data 4 sample 2 it gave 102,508, above `linear-regr` 100,750 (recent-200 had 1,629 width-12 hits after n>200 versus global's 1,579). However its full results were Data 4: 103,867; 102,508; 102,365; 100,421; 102,799, only 3/5 wins; Data 5: 104,860; 97,631; 99,929; 96,714; 96,773, only 2/5 wins. The recent shift's correlation with the next global prediction error in Data 4 sample 2 was only 0.0007, so its local gain lacks predictive evidence. Reject this candidate.
+
+Rounding audit: With fixed width 12 and the same global regression, virtual `Floor` gives Data 4 2/5 wins and is rejected. Virtual `Ceil` gives Data 4 103,247; 100,710; 104,845; 103,211; 102,241 (4/5) and Data 5 100,706; 100,111; 100,611; 98,264; 101,485 (5/5). It is only 40 points below the reference on Data 4 sample 2, but still does not win it. Hybrid rules that use Ceil when the regression prediction's fractional part is at least thresholds 0.00 through 0.50 were audited; none exceeded 100,710 on sample 2, and many reduced other scores. Do not replace `math.Round` with a rounding threshold merely to chase the fixed sample.
+
+### 2026-08-30 — Data 4 all-five-win feasibility check
+
+The current root binary was scored directly using the tester formula on fixed Data 4 samples. Student: 102,967; 99,170; 104,690; 102,985; 102,421. `linear-regr`: 102,300; 100,750; 104,532; 101,680; 101,618. This remains 4/5; only sample 2 loses by 1,580 points.
+
+For sample 2 after the first 100 values, both programs emit width exactly 12. The student has 1,593 mature hits and `linear-regr` 1,619, accounting for the loss; the student gains only 32 points in the first 100 guesses. Thus changing the width cannot reasonably repair the loss. Previous audits found near-zero residual lag-1 correlation and no beneficial constant centre shift, so a last-residual correction or global offset is not justified. A tailored rule that identifies sample 2 could win the supplied files but would be overfitting, not a valid streaming predictor. Also, `calculators/prediction.go` still has the rejected n=76-to-100 behaviour although the measured root binary gives the 4/5 baseline; align source and binaries before any new experiment.
+
 ### 2026-08-29 — Regression and residual comprehension review
 
 Learner answered a five-question oral review at 7.5/10. They correctly described the slope `a`, the intercept `b`, residual as actual minus regression-predicted value, and the mature fixed-width decision. They then correctly corrected the index trace: after receiving n values, existing indices are 0 through n-1, while the next unknown value is at index n. Residual spread is useful because it measures noise around the trend; ordinary standard deviation around the average mixes that noise with the overall upward trend.
