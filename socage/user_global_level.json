@@ -206,5 +206,6 @@
     ,"On 2026-08-30, learner validated the restored Guess-it-2 source on every supplied fixed sample: it beats linear-regr on 4 of 5 Data 4 files and all 5 Data 5 files. They should distinguish this verified result from an all-five Data 4 win; sample 2 still loses."
     ,"On 2026-08-30, learner tested a causal mature-centre alternative: a regression over the latest 200 values after n=200, with width 12 unchanged. It won the previously losing Data 4 sample 2 but collapsed the aggregate to 3/5 Data 4 and 2/5 Data 5 wins. They learned that a gain on one deterministic sample needs full-dataset validation and a predictive signal before adoption."
     ,"On 2026-08-30, learner completed a rounding audit for the mature Guess-it-2 centre. Floor loses too many datasets; Ceil preserves Data 4 4/5 and Data 5 5/5 but misses Data 4 sample 2 by 40 points. Fractional rounding thresholds did not close that gap, so the verified Round policy remains the appropriate choice."
+    ,"On 2026-08-30, learner paused Guess-it-2 with a verified restore point: source passes formatting and tests, wins Data 4 on 4/5 files and Data 5 on 5/5 files, and should retain the rounded global-regression centre with fixed width 12 after n=100."
   ]
 }

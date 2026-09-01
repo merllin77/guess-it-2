@@ -17,6 +17,10 @@ Current goal: Predict a narrow range containing the next input, using the input-
 
 ## Session Summaries
 
+### 2026-08-30 — Session pause
+
+Learner chose to stop after completing the mature-centre audit. Preserve the validated source policy: residual-aware early ranges through n=100, then global regression prediction rounded with `math.Round` and fixed plus-or-minus 6 after n>100. It is verified at Data 4 4/5 and Data 5 5/5 against `linear-regr`; no causal candidate reached Data 4 5/5. On resume, remove obsolete comments if desired and rebuild the root and tester binaries before presenting the source result in Docker.
+
 ### 2026-08-30 — Restore of the n=51-to-100 low-noise branch
 
 Learner simplified the low-noise switch to `n > 50 && n <= 100`, with multiplier `0.3`. This fixes the prior n=76-to-100 gap where the multiplier remained zero. They initially added an extra closing brace before `else`; compiler feedback identified it, and they corrected the block nesting. Source validation now passes: no gofmt diff, `go test ./...` passes with `GOCACHE=/tmp/guess-it-2-go-cache` and `/home/merllin/.local/bin/go`, and `git diff --check` is clean. The checked binaries are still old and must be rebuilt before any score claims from the edited source.

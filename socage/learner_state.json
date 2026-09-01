@@ -16,5 +16,5 @@
   "known_project_tools": [],
   "weak_project_tools": [],
     "recent_session_summary": "Learner restored and validated the n=51 through n=100 multiplier 0.3 source baseline: Data 4 wins 4/5 and Data 5 wins 5/5 versus linear-regr. Read-only mature-centre audits rejected both a recent-200 regression (it wins Data 4 sample 2 but falls to Data 4 3/5 and Data 5 2/5) and rounding variants. Pure Ceil is the best rounding alternative: Data 4 103,247; 100,710; 104,845; 103,211; 102,241 (4/5) and Data 5 100,706; 100,111; 100,611; 98,264; 101,485 (5/5), but it still loses Data 4 sample 2 by 40 points. Fractional-part thresholds from 0 through 0.50 did not beat 100,710 for that sample.",
-    "next_step": "Keep the global-regression rounded centre with fixed plus-or-minus 6 after n>100. Rebuild the binaries from source when ready; no tested causal mature-centre alternative improves all datasets or achieves Data 4 5/5."
+    "next_step": "Session paused. On resume, optionally remove obsolete comments, then rebuild root and tester binaries from the validated source. Keep the global-regression rounded centre with fixed plus-or-minus 6 after n>100; no tested causal mature-centre alternative achieves Data 4 5/5 without harming other datasets."
 }
