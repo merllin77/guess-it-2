@@ -58,6 +58,6 @@ cd guess-it-dockerized
 docker compose up --build
 ```
 
-Open `http://localhost:3000` and compare the **Final Result** as well as coverage. A wider interval can improve correct guesses while lowering the score, so Final Result is the main measure for tuning.
+Open `http://localhost:3000?guesser=<name-of-guesser>`, replacing `<name-of-guesser>` with a reference guesser such as `big-range`, `linear-regr`, or `correlation-coef`. For example, open [http://localhost:3000?guesser=linear-regr](http://localhost:3000?guesser=linear-regr).
 
-For a reproducible comparison, score all five fixed files in both official folders, `data_sets/4/` and `data_sets/5/`, against `linear-regr` rather than relying on one browser click. The final audited policy won 4 of 5 Data 4 samples and 5 of 5 Data 5 samples.
+Select **Data 4** or **Data 5** in the tester and compare the **Final Result** as well as coverage. A wider interval can improve correct guesses while lowering the score, so Final Result is the main measure for tuning.
